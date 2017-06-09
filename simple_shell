@@ -1,0 +1,98 @@
+#!/bin/bash
+
+while true 
+do
+
+PS3='Please select your choice: '
+
+options=("Display Date/Time" "Find File" "Delete File/Dir" "Backup Dir" "Create Incr. Backup" "Quit")
+select opt in "${options[@]}"
+do
+
+case "$opt" in
+
+"Display Date/Time")
+prompt=$PS3
+if [ "$prompt" = "Please select your choice: " ];
+then
+PS3="`date`: "
+else
+PS3='Please select your choice: '
+fi 	
+;;
+
+"Find File")
+echo -e "Please enter file name"
+read filename
+if [ -e $filename ];
+then
+echo "File found"
+else
+echo "File not found"
+fi
+;;
+
+"Delete File/Dir")
+echo -e "Please enter a file name/directory"
+read deletename
+if [ -e $deletename ];
+then 
+echo "Are you sure you want to delete $deletename? (y/n)"
+read confirm
+	if [ $confirm = "y" ];
+	then
+	rm -rf $deletename
+	else
+	echo -e "Operation Cancelled"
+	fi
+fi
+;;
+
+"Backup Dir")
+echo -e "Please enter a directory to backup"
+read backupname
+if [ -d ./$backupname ];
+then
+echo -e "Please enter the directory where you would like the backup to be stored"
+read destname
+	if [ -d ./$destname ];
+	then
+	cp -r ./$backupname/* ./$destname
+	else
+	echo -e "Destination does not exist, create? (y/n)"
+	read create
+	mkdir -p ./$destname
+	cp -r ./$backupname/* ./$destname
+	fi
+else
+echo -e "Operaton Cancelled"
+fi
+;;
+
+"Create Incr. Backup")
+echo -e "This will backup your user directory. Continue? (Select no for restore/cancel) (y/n)"
+read continue
+if [ $continue = "y" ];
+then 
+mkdir -p ./backups
+tar cvzf ./backups/backup_"$USER".tar.gz /home/$USER/*
+else
+echo -e "Restore user directory? (y/n)"
+read restore
+	if [ $restore = "y" ];
+	then 
+	tar zxvf ./backups/backup_"$USER".tar.gz -C /home/$USER/ 
+	else 
+	echo -e "Operation Cancelled" 
+	fi
+fi
+;;
+
+"Quit")
+echo -e "Quitting script"
+exit
+;;
+
+esac
+done
+done
